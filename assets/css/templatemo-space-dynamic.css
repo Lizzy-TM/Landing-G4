@@ -138,7 +138,8 @@ img {
   width: 38%;
 }
 .imagen__bannerprincipal{
-  width: 112%
+  width: 112%;
+  padding: 60px;
 }
 /* 
 ---------------------------------------------
