@@ -428,7 +428,7 @@ https://templatemo.com/tm-562-space-dynamic
           </div>
         </div>
         <div class="col-lg-6 wow fadeInRight" data-wow-duration="0.5s" data-wow-delay="0.25s">
-          <form id="contact" action="procesar_formulario.php" method="post">
+          <form id="contact" onsubmit="handleSubmit(event)">
             <div class="row">
               <div class="col-lg-6">
                   <fieldset>
@@ -437,17 +437,17 @@ https://templatemo.com/tm-562-space-dynamic
               </div>
               <div class="col-lg-6">
                   <fieldset>
-                      <input type="text" name="surname" id="surname" placeholder="Apellidos" autocomplete="on" required>
+                      <input type="text" name="lastname" id="lastname" placeholder="Apellidos" autocomplete="on" required>
                   </fieldset>
               </div>
               <div class="col-lg-12">
                   <fieldset>
-                      <input type="email" name="email" id="email" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" placeholder="Su Email" required>
+                      <input type="email" name="email" id="email" placeholder="Email" required>
                   </fieldset>
               </div>
               <div class="col-lg-12">
                   <fieldset>
-                      <textarea name="message" class="form-control" id="message" placeholder="Mensaje" required></textarea>
+                      <textarea name="message" id="message" placeholder="Mensaje" required></textarea>
                   </fieldset>
               </div>
               <div class="col-lg-12">
@@ -455,8 +455,15 @@ https://templatemo.com/tm-562-space-dynamic
                       <button type="submit" id="form-submit" class="main-button">Enviar Mensaje</button>
                   </fieldset>
               </div>
-              <div class="col-lg-12 mt-3">
-                  <div id="form-message" class="alert" style="display: none;"></div>
+              <div class="col-lg-12">
+                  <div id="form-message" class="mt-4" style="display: none;">
+                    <div class="alert-success" style="padding: 15px; border-radius: 5px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+                      <i class="fa fa-check-circle"></i> ¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.
+                    </div>
+                    <div class="alert-error" style="display: none; padding: 15px; border-radius: 5px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
+                      <i class="fa fa-times-circle"></i> Hubo un error al enviar el mensaje. Por favor, inténtalo nuevamente.
+                    </div>
+                  </div>
               </div>
             </div>
           </form>
@@ -485,6 +492,69 @@ https://templatemo.com/tm-562-space-dynamic
   <script src="assets/js/animation.js"></script>
   <script src="assets/js/imagesloaded.js"></script>
   <script src="assets/js/templatemo-custom.js"></script>
+  <script>
+    function handleSubmit(event) {
+      event.preventDefault();
+      
+      const formData = {
+        email: document.getElementById('email').value,
+        name: document.getElementById('name').value,
+        lastname: document.getElementById('lastname').value,
+        message: document.getElementById('message').value
+      };
+
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      };
+
+      // Deshabilitar el botón mientras se envía
+      const submitButton = document.getElementById('form-submit');
+      submitButton.disabled = true;
+      
+      // Ocultar mensajes previos
+      const formMessage = document.getElementById('form-message');
+      const successMessage = formMessage.querySelector('.alert-success');
+      const errorMessage = formMessage.querySelector('.alert-error');
+      successMessage.style.display = 'none';
+      errorMessage.style.display = 'none';
+      formMessage.style.display = 'block';
+
+      fetch('https://us-central1-example-send-email.cloudfunctions.net/receiveMessage/example-send-email/us-central1/receiveMessage', options)
+        .then(response => {
+          if (!response.ok) {
+            // throw new Error('Error en la respuesta del servidor');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            successMessage.style.display = 'block';
+            document.getElementById('contact').reset();
+            // Ocultar el mensaje después de 5 segundos
+            setTimeout(() => {
+              formMessage.style.display = 'none';
+            }, 1000);
+          } else {
+            // throw new Error(data.message || 'Error al enviar el mensaje');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // errorMessage.style.display = 'block';
+          // // Ocultar el mensaje de error después de 5 segundos
+          // setTimeout(() => {
+          //   formMessage.style.display = 'none';
+          // }, 100);
+        })
+        .finally(() => {
+          submitButton.disabled = false;
+        });
+    }
+  </script>
 
 </body>
 </html>
